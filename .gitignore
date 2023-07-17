@@ -1,0 +1,5 @@
+*.pyc
+*.swp
+.env
+drf_practice/bin
+drf_practice/lib
