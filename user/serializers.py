@@ -20,7 +20,11 @@ class UserSerializer(serializers.Serializer):
     updated_on = serializers.DateTimeField(read_only=True)
     
     def create(self,validated_data):
-        return User.objects.create(**validated_data)
+        genre_preferred=validated_data.pop('prefered_genre',[])
+        user= User.objects.create(**validated_data)
+        user.prefered_genre.set(genre_preferred)
+        return user
+
     
     def update(self,instance, validated_data):
         genre_ids = validated_data.pop('prefered_genre',[])
@@ -30,33 +34,37 @@ class UserSerializer(serializers.Serializer):
         instance.prefered_genre.set(genre_ids)
         return instance
 
-
-class MovieRatingDetailSerializer(serializers.Serializer):
-    id=serializers.IntegerField(read_only=True)
-    movie = serializers.PrimaryKeyRelatedField(queryset = Movie.objects.all())
+class MovieRatingSerializer(serializers.Serializer):
+    movie = serializers.PrimaryKeyRelatedField(queryset=MovieRatingDetail.objects.all())
     user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all())
-    comment = serializers.CharField(required=False)
-    rating = serializers.IntegerField()
-    like = serializers.BooleanField(required=False) 
-    created_on = serializers.DateTimeField(required=False)
-    updated_on = serializers.DateTimeField(required=False)
-    
+    comment = serializers.CharField(max_length=250)
+    rating = serializers.IntegerField(required=False)
+    like = serializers.BooleanField(required=False)
+    created_on = serializers.DateTimeField(read_only=True)
+    updated_on = serializers.DateTimeField(read_only=True)
+
     def create(self,validated_data):
-        return MovieRatingDetail.objects.create(**validated_data)
-    
+        movierating =MovieRatingDetail.object.create(**validated_data)
+        return movierating
+
     def update(self,instance,validated_data):
         for k,v in validated_data.items():
             setattr(instance,k,v)
-        instance.save()
+            instance.save()
         return instance
 
 class TokenSerializer(serializers.Serializer):
     user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all())
-    token = serializers.CharField(max_length=500,read_only=True)
+    token = serializers.CharField(max_length=255)
     created_on = serializers.DateTimeField(read_only=True)
     updated_on = serializers.DateTimeField(read_only=True)
-    
+
     def create(self,validated_data):
-        token = 'sample token' #functionality to create JWT token / simple token
-        validated_data['token'] = token
-        return Token.objects.create(**validated_data)
+        movierating =MovieRatingDetail.object.create(**validated_data)
+        return movierating
+
+    def update(self,instance,validated_data):
+        for k,v in validated_data.items():
+            setattr(instance,k,v)
+            instance.save()
+        return instance
