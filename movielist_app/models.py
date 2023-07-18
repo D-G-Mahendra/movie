@@ -32,10 +32,16 @@ MOVIE_GENRES = [
     ("Sports", "Sports"),
     ("War", "War")
 ]
-
+"""" 
+Important Points while creating serializers
+1. we creating serializer for model 
+2. we will be only looking only that model for which we are creating serializer
+3. will implement create/update method inside serializer when it is required. 
+"""
 class Genre(models.Model):
     
     genre = models.CharField(max_length=50,choices=MOVIE_GENRES)
+
     def __str__(self):
         return self.genre
 class Movie(models.Model):

@@ -1,11 +1,13 @@
 from django.urls import path
 from django.conf.urls import include
+from .views import UserView, UserDetails, MovieRatingView, MovieRatingDetailsView, TokenView, TokenDetailsView
 
-from .views import UserAPIView,UserDetailAPIView,MovieRatingDetailAPIView,MovieRatingDetailsAPIView,TokenAPIView
 urlpatterns = [
-    path('',UserAPIView.as_view(),name="user_api"),
-    path('<int:pk>/',UserDetailAPIView.as_view(),name="user_detail_api"),
-    path('mrd/',MovieRatingDetailAPIView.as_view(),name="mrd_api"),
-    path('mrd/<int:pk>',MovieRatingDetailsAPIView.as_view(),name="mrd_detail_api"),
-    path('token/',TokenAPIView.as_view(),name= "token_api"),
+
+    path('user/', UserView.as_view(), name='userView'),
+    path('user/<int:pk>/', UserDetails.as_view(), name='detailsView'),
+    path('movierating/', MovieRatingView.as_view(), name='movieratingView'),
+    path('movierating/<int:pk>/', MovieRatingDetailsView.as_view(), name='movieratingdetailsView'),
+    path('token/', TokenView.as_view(), name='tokenView'),
+    path('token/<int:pk>/', TokenDetailsView.as_view(), name='tokendetailsView'),
 ]
