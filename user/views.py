@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from movielist_app.models import Movie
 from movielist_app.serializers import MovieSerializer
 from user.models import User, MovieRatingDetail, Token
-from user.serializers import UserSerializer, MovieRatingSerializer, TokenSerializer
+from user.serializers import UserSerializer, MovieRatingDetailSerializer, TokenSerializer
 
 
 # Create your views here.
@@ -44,11 +44,11 @@ class UserDetails(APIView):
 class MovieRatingView(APIView):
     def get(self,request):
         queryset=MovieRatingDetail.objects.all()
-        serializer= MovieRatingSerializer(queryset, many=True,)
+        serializer= MovieRatingDetailSerializer(queryset, many=True,)
         return Response(serializer.data)
 
     def post(self,request):
-        serializer= MovieRatingSerializer(data=request.data)
+        serializer= MovieRatingDetailSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -58,11 +58,11 @@ class MovieRatingDetailsView(APIView):
 
     def get(self,request,pk):
         queryset=MovieRatingDetail.objects.get(pk=pk)
-        serializer= MovieRatingSerializer(queryset)
+        serializer= MovieRatingDetailSerializer(queryset)
         return Response(serializer.data)
     def put(self,request,pk):
         queryset=MovieRatingDetail.objects.get(pk=pk)
-        serializer=MovieRatingSerializer(queryset,data=request.data)
+        serializer=MovieRatingDetailSerializer(queryset,data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
