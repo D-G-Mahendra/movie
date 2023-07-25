@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from movielist_app.serializers import GenreSerializer, MovieSerializer
 from .models import User
 from .models import MovieRatingDetail
 from .models import Token
@@ -15,18 +16,12 @@ class UserSerializer(serializers.Serializer):
     email = serializers.EmailField(required = False)
     dob = serializers.DateField(required = False)
     age = serializers.IntegerField(required = False)
-    prefered_genre = serializers.PrimaryKeyRelatedField(queryset=Genre.objects.all(),many=True,required=False)
+    prefered_genre = GenreSerializer(many=True)
     created_on = serializers.DateTimeField(read_only=True)
     updated_on = serializers.DateTimeField(read_only=True)
-    
-    # def create(self,validated_data):
-    #     genre_preferred=validated_data.pop('prefered_genre',[])
-    #     user= User.objects.create(**validated_data)
-    #     user.prefered_genre.set(genre_preferred)
-    #     return user
 
-    def create(self, validated_data):
-        prefered_genre_id = validated_data.pop('prefered_genre')
+    def create(self, validated_data, user_data=None):
+
         fname = validated_data.get('fname')
         lname = validated_data.get('lname')
         mobile = validated_data.get('mobile')
@@ -41,20 +36,11 @@ class UserSerializer(serializers.Serializer):
             dob=dob,
             age=age,
         )
+        prefered_genre_id = self.initial_data.get('prefered_genre')
         if prefered_genre_id:
-            prefered_genres = Genre.objects.filter(pk__in=prefered_genre_id)
+            prefered_genres = Genre.objects.filter(pk__in=[prefered_genre['id']for prefered_genre in prefered_genre_id])
             user.prefered_genre.set(prefered_genres)
-
         return user
-    
-    # def update(self,instance, validated_data):
-    #     genre_ids = validated_data.pop('prefered_genre',[])
-    #     for k,v in validated_data.items():
-    #         setattr(instance,k,v)
-    #     instance.save()
-    #     instance.prefered_genre.set(genre_ids)
-    #     return instance
-
 
     def update(self, instance, validated_data):
         prefered_genre_id = validated_data.pop('prefered_genre', [])
@@ -74,40 +60,30 @@ class UserSerializer(serializers.Serializer):
 
 class MovieRatingDetailSerializer(serializers.Serializer):
     id=serializers.IntegerField(read_only=True)
-    movie = serializers.PrimaryKeyRelatedField(queryset = Movie.objects.all())
-
-    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all())
+    movie = MovieSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
     comment = serializers.CharField(max_length=250)
     rating = serializers.IntegerField(required=False)
     like = serializers.BooleanField(required=False)
     created_on = serializers.DateTimeField(read_only=True)
     updated_on = serializers.DateTimeField(read_only=True)
 
-    # def create(self,validated_data):
-    #     movierating =MovieRatingDetail.object.create(**validated_data)
-    #     return movierating
-    #
-    def create(self, instance, validated_data):
-        user = validated_data.get('user')
-        movie = validated_data.get('movie')
+    def create(self, validated_data):
+
+        user = User.objects.get(pk=self.initial_data.get('user')["id"]) # getting the instance of user
+        movie = Movie.objects.get(pk=self.initial_data.get('movie')["id"]) # getting the instance of movie
         comment = validated_data.get('comment')
         rating = validated_data.get('rating')
         like = validated_data.get('like')
+
         movieratingdetail = MovieRatingDetail.objects.create(
-            user=user,
+            user= user,
             movie=movie,
             comment =comment,
             rating = rating,
             like= like
         )
-
         return movieratingdetail
-    
-    # def update(self,instance,validated_data):
-    #     for k,v in validated_data.items():
-    #         setattr(instance,k,v)
-    #     instance.save()
-    #     return instance
 
     def update(self, instance, validated_data):
         instance.user = validated_data.get('user', instance.user)
@@ -121,36 +97,21 @@ class MovieRatingDetailSerializer(serializers.Serializer):
         return instance
 
 class TokenSerializer(serializers.Serializer):
-    user = serializers.PrimaryKeyRelatedField(queryset = User.objects.all())
+    user = UserSerializer(read_only=True)
     token = serializers.CharField(max_length=255)
     created_on = serializers.DateTimeField(read_only=True)
     updated_on = serializers.DateTimeField(read_only=True)
 
-    # def create(self,validated_data):
-    #     movierating =MovieRatingDetail.object.create(**validated_data)
-    #     return movierating
-
-    def create(self,instance,validated_data):
-        user = validated_data.get('user')
+    def create(self, validated_data):
+        user = User.objects.get(pk=self.initial_data.get('user')["id"])
         token = validated_data.get('token')
         token = Token.objects.create(
             user=user,
-            token = token
+            token=token
         )
-
         return token
 
-    # def update(self, instance, validated_data):
-    #     user_id = validated_data.pop('user', [])
-    #
-    #     for k,v in validated_data.items():
-    #         setattr(instance,k,v)
-    #
-    #     instance.save()
-    #     instance.user.set(user_id)
-    #     return instance
-
-    def update(self,instance,validated_data):
+    def update(self, instance,validated_data):
         instance.user = validated_data.get('user', instance.user)
         instance.token = validated_data.get('token', instance.token)
 

@@ -10,7 +10,7 @@ from user.serializers import UserSerializer, MovieRatingDetailSerializer, TokenS
 
 # Create your views here.
 class UserView(APIView):
-    def get(self,request):
+    def get(self, request):
         queryset=User.objects.all()
         serializer= UserSerializer(queryset, many=True,)
         return Response(serializer.data)
@@ -20,7 +20,7 @@ class UserView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.error)
+        return Response(serializer.errors)
 
 class UserDetails(APIView):
 
@@ -34,7 +34,7 @@ class UserDetails(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return  Response(serializer.error)
+        return  Response(serializer.errors)
 
     def delete(self,request,pk):
         queryset=User.objects.get(pk=pk)
@@ -52,7 +52,7 @@ class MovieRatingView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.error)
+        return Response(serializer.errors)
 
 class MovieRatingDetailsView(APIView):
 
@@ -62,11 +62,11 @@ class MovieRatingDetailsView(APIView):
         return Response(serializer.data)
     def put(self,request,pk):
         queryset=MovieRatingDetail.objects.get(pk=pk)
-        serializer=MovieRatingDetailSerializer(queryset,data=request.data)
+        serializer=MovieRatingDetailSerializer(queryset, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return  Response(serializer.error)
+        return  Response(serializer.errors)
 
     def delete(self,request,pk):
         queryset=MovieRatingDetail.objects.get(pk=pk)
@@ -84,7 +84,7 @@ class TokenView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.error)
+        return Response(serializer.errors)
 
 class TokenDetailsView(APIView):
 
@@ -98,7 +98,7 @@ class TokenDetailsView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return  Response(serializer.error)
+        return  Response(serializer.errors)
 
     def delete(self, request, pk):
         queryset=Token.objects.get(pk=pk)
