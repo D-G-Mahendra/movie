@@ -40,20 +40,20 @@ Important Points while creating serializers
 """
 class Genre(models.Model):
     
-    genre = models.CharField(max_length=50,choices=MOVIE_GENRES)
+    genre = models.CharField(max_length=50, choices=MOVIE_GENRES)
 
     def __str__(self):
         return self.genre
 class Movie(models.Model):
     title = models.CharField(max_length=500)
-    description = models.TextField(blank=True,null=True)
-    average_rating = models.IntegerField(blank=True,default=0)
-    total_like = models.IntegerField(blank=True,default=0)
-    total_review = models.IntegerField(blank=True,default=0)
+    description = models.TextField(blank=True, null=True)
+    average_rating = models.IntegerField(blank=True, default=0)
+    total_like = models.IntegerField(blank=True, default=0)
+    total_review = models.IntegerField(blank=True, default=0)
     released_date = models.DateField(blank=True, null=True)
     duration = models.CharField(blank=True, null=True,max_length=100)
-    director = models.ForeignKey(Director,on_delete=models.CASCADE)
-    genre = models.ManyToManyField(Genre,blank=True)
+    director = models.ForeignKey(Director, on_delete=models.CASCADE)
+    genre = models.ManyToManyField(Genre, blank=True)
     created_on = models.DateTimeField(auto_now_add=True, auto_now=False)
     updated_on = models.DateTimeField(auto_now_add=False, auto_now=True)
     
