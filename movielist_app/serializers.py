@@ -4,7 +4,7 @@ from movielist_app.models import Director, Genre, Movie
 
 
 class GenreSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
+    id = serializers.IntegerField()
     genre = serializers.CharField(max_length=100)
 
     def create(self, validated_data):
@@ -46,7 +46,7 @@ class MovieSerializer(serializers.Serializer):
     total_review = serializers.IntegerField(required=False)
     released_date = serializers.DateField(required=False)
     duration = serializers.CharField(max_length=100, required=False)
-    director = DirectorSerializer(read_only=True)
+    director = DirectorSerializer(read_only=True, many=True)
     genre = GenreSerializer(read_only=True, many=True)
 
     def create(self,validated_data):
@@ -78,7 +78,7 @@ class MovieSerializer(serializers.Serializer):
         return movie
 
     def update(self, instance, validated_data):
-        genre_data = validated_data.pop('genre', [])
+        #genre_data = validated_data.pop('genre', [])
 
         #director = Director.objects.get(pk=2) calling object using id
         instance.title = validated_data.get('title', instance.title)
@@ -88,11 +88,23 @@ class MovieSerializer(serializers.Serializer):
         instance.total_review = validated_data.get('total_review', instance.total_review)
         instance.released_date = validated_data.get('released_date', instance.released_date)
         instance.duration = validated_data.get('duration', instance.duration)
-        instance.director = validated_data.get('director', instance.director)
+        #instance.director = validated_data.get('director', instance.director)
         #instance.director = director updating the object instance
 
+        director_data = self.initial_data.get('director', None).get('id', None)
+        instance.director =Director.objects.get(pk=director_data)
+
+        genre_data = self.initial_data.get('genre', [])
         if genre_data:
-            instance.genre.set(genre_data)
+            genres = Genre.objects.filter(pk__in=[genre['id'] for genre in genre_data])
+            instance.genre.set(genres)
+
+        # genre_data = self.initial_data['genre']
+        # genreinstance = []
+        # for genre in genre_data:
+        #     genreinstance.append(Genre.objects.get(pk=genre['id']))
+        # instance.genre.set(genreinstance)
+
         instance.save()
         return instance
 

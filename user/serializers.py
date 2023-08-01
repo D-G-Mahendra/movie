@@ -16,7 +16,7 @@ class UserSerializer(serializers.Serializer):
     email = serializers.EmailField(required = False)
     dob = serializers.DateField(required = False)
     age = serializers.IntegerField(required = False)
-    prefered_genre = GenreSerializer(many=True)
+    prefered_genre = GenreSerializer(many=True, required=False)
     created_on = serializers.DateTimeField(read_only=True)
     updated_on = serializers.DateTimeField(read_only=True)
 
@@ -36,14 +36,14 @@ class UserSerializer(serializers.Serializer):
             dob=dob,
             age=age,
         )
-        prefered_genre_id = self.initial_data.get('prefered_genre')
+        prefered_genre_id = self.initial_data.get('prefered_genre',[])
         if prefered_genre_id:
-            prefered_genres = Genre.objects.filter(pk__in=[prefered_genre['id']for prefered_genre in prefered_genre_id])
+            prefered_genres = Genre.objects.filter(pk__in=[prefered_genre['id'] for prefered_genre in prefered_genre_id])
             user.prefered_genre.set(prefered_genres)
         return user
 
     def update(self, instance, validated_data):
-        prefered_genre_id = validated_data.pop('prefered_genre', [])
+        prefered_genre_id = validated_data.get('prefered_genre', [])
 
         instance.id = validated_data.get('id', instance.id)
         instance.fname = validated_data.get('fname', instance.fname)
@@ -54,7 +54,11 @@ class UserSerializer(serializers.Serializer):
         instance.age = validated_data.get('age', instance.age)
 
         if prefered_genre_id:
-            instance.prefered_genre.set(prefered_genre_id)
+            prefered_genre =[prefered_genre['id'] for prefered_genre in prefered_genre_id]
+            prefered_genres = Genre.objects.filter(
+                pk__in=prefered_genre)
+            instance.prefered_genre.set(prefered_genres)
+
         instance.save()
         return instance
 
@@ -69,7 +73,6 @@ class MovieRatingDetailSerializer(serializers.Serializer):
     updated_on = serializers.DateTimeField(read_only=True)
 
     def create(self, validated_data):
-
         user = User.objects.get(pk=self.initial_data.get('user')["id"]) # getting the instance of user
         movie = Movie.objects.get(pk=self.initial_data.get('movie')["id"]) # getting the instance of movie
         comment = validated_data.get('comment')
@@ -86,8 +89,13 @@ class MovieRatingDetailSerializer(serializers.Serializer):
         return movieratingdetail
 
     def update(self, instance, validated_data):
-        instance.user = validated_data.get('user', instance.user)
-        instance.movie = validated_data.get('movie', instance.movie)
+        # instance.user = validated_data.get('user', instance.user)
+        # instance.movie = validated_data.get('movie', instance.movie)
+
+        user_data = self.initial_data.get('user', None).get('id', None)
+        instance.user = User.objects.get(pk=user_data)
+        movie_data = self.initial_data.get('movie', None).get('id', None)
+        instance.movie = Movie.objects.get(pk=movie_data)
         instance.id = validated_data.get('id', instance.id)
         instance.comment = validated_data.get('comment', instance.comment)
         instance.rating = validated_data.get('rating', instance.rating)
@@ -111,8 +119,10 @@ class TokenSerializer(serializers.Serializer):
         )
         return token
 
-    def update(self, instance,validated_data):
-        instance.user = validated_data.get('user', instance.user)
+    def update(self, instance, validated_data):
+        #instance.user = validated_data.get('user', instance.user)
+        user_data = self.initial_data.get('user', None).get('id', None)
+        instance.user = User.objects.get(pk=user_data)
         instance.token = validated_data.get('token', instance.token)
 
         instance.save()
