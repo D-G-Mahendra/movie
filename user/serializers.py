@@ -8,9 +8,12 @@ from .models import Token
 from movielist_app.models import Genre
 from movielist_app.models import Movie
 
+def fname_with(value):
+    if value[1].lower == 'ss':
+        raise serializers.ValidationError('fname should not start with SS')
 class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    fname = serializers.CharField(max_length=250)
+    fname = serializers.CharField(max_length=250, validators=[fname_with])
     lname = serializers.CharField(max_length=250)
     mobile = serializers.CharField(max_length=100,required = False)
     email = serializers.EmailField(required = False)
@@ -61,11 +64,25 @@ class UserSerializer(serializers.Serializer):
 
         instance.save()
         return instance
+    def validate_age(self, value):
+        if value < 20:
+            raise serializers.ValidationError('age should be greater than 20')
+        return value
 
+    def validate(self, data):
+        fn = data.get('fname')
+        ln = data.get('lname')
+        if fn == ln:
+            raise serializers.ValidationError(' fname and lname should not be same')
+        return data
+
+def user_name(value):
+    if value[2].lower() != 'ss':
+        raise serializers.ValidationError('SS not the user')
 class MovieRatingDetailSerializer(serializers.Serializer):
     id=serializers.IntegerField(read_only=True)
     movie = MovieSerializer(read_only=True)
-    user = UserSerializer(read_only=True)
+    user = UserSerializer(read_only=True, validators=[user_name])
     comment = serializers.CharField(max_length=250)
     rating = serializers.IntegerField(required=False)
     like = serializers.BooleanField(required=False)
@@ -103,10 +120,23 @@ class MovieRatingDetailSerializer(serializers.Serializer):
 
         instance.save()
         return instance
+    def validate_rating(self,value):
+        if value < 2:
+            raise serializers.ValidationError('Movie is not good')
+        return value
+    def validate(self, data):
+        r =data.get('rating')
+        l =data.get('like')
+        if r==l:
+            raise serializers.ValidationError('rating and like should not be same')
+        return data
 
+def token_name(value):
+    if value[0] == '3':
+        raise serializers.ValidationError('Aditya should not be fname')
 class TokenSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
-    token = serializers.CharField(max_length=255)
+    token = serializers.CharField(max_length=255, validators=[token_name])
     created_on = serializers.DateTimeField(read_only=True)
     updated_on = serializers.DateTimeField(read_only=True)
 
@@ -127,3 +157,14 @@ class TokenSerializer(serializers.Serializer):
 
         instance.save()
         return instance
+
+    def validate_token(self, value):
+        if value ==3:
+            raise serializers.ValidationError('if token is 3 user should aditya')
+        return value
+
+    def validate(self, data):
+        us = data.get('user')
+        to = data.get('token')
+        if to ==3 and us == 'Aditya':
+            raise serializers.ValidationError('aditya should not be user')
