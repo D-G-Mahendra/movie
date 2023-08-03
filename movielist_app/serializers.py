@@ -2,7 +2,9 @@ from rest_framework import serializers
 
 from movielist_app.models import Director, Genre, Movie
 
-
+# def genre_name(value):
+#     if value[0] == 3:
+#         raise serializers.ValidationError('id should be Adventure')
 class GenreSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     genre = serializers.CharField(max_length=100)
@@ -19,13 +21,23 @@ class GenreSerializer(serializers.Serializer):
         instance.genre =validated_data.get('genre', instance.genre)
         instance.save()
         return instance
+
+    def validate_genre(self, value):
+        if value =='Action':
+            raise serializers.ValidationError('genre should change')
+        return value
+
+def name_start(value):
+    if value[1].lower() != 'SS':
+        raise serializers.ValidationError('SS is not Director')
+
 class DirectorSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
+    name = serializers.CharField(validators=[name_start])
     created_on = serializers.DateTimeField(read_only=True)
     updated_on = serializers.DateTimeField(read_only=True)
 
-    def create(self, instance, validated_data):
+    def create(self, validated_data):
         name = validated_data.get('name')
         director = Director.objects.create(
             name=name
@@ -38,15 +50,29 @@ class DirectorSerializer(serializers.Serializer):
         instance.save()
         return instance
 
+    def validate_name(self, value):
+        if value == 'Aditya':
+            raise serializers.ValidationError(' dont write Author Name')
+        return value
+
+    def validate(self, data):
+        nm = data.get('name')
+        cd = data.get('created_on')
+        if cd != ''and nm !='RRR' :
+            raise serializers.ValidationError('updated date and created should not be same')
+        return data
+def title_with_a(value):
+    if value[0].lower != 'aditya':
+        raise serializers.ValidationError('name shoulld not start with Aditya')
 class MovieSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=500)
+    title = serializers.CharField(max_length=500, validators=[title_with_a])
     description = serializers.CharField(required=False)
     average_rating = serializers.IntegerField(required=False)
     total_like = serializers.IntegerField(required=False)
     total_review = serializers.IntegerField(required=False)
     released_date = serializers.DateField(required=False)
     duration = serializers.CharField(max_length=100, required=False)
-    director = DirectorSerializer(read_only=True, many=True)
+    director = DirectorSerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
 
     def create(self,validated_data):
@@ -107,6 +133,17 @@ class MovieSerializer(serializers.Serializer):
 
         instance.save()
         return instance
+    def validate_average_rating(self, value):
+        if value > 5:
+            raise serializers.ValidationError('rating should not be greater than 5')
+        return value
+
+    def validate(self, data):
+        ar =data.get('average_rating')
+        li = data.get('total_like')
+        if ar > 3 and li != 2:
+            raise  serializers.ValidationError('ar and li is compared, likes must be 2')
+        return data
 
 
 
